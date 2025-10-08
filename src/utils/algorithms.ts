@@ -1,138 +1,141 @@
-// utils/algorithms.ts
-export type Step = {
-    frames: number[];
-    page: number;
-    fault: boolean;
-    explanation: string;
-};
+export interface Step {
+  frames: number[];
+  page: number;
+  fault: boolean;
+  explanation: string;
+  replacedPage?: number; // 👈 add this line
+}
 
+
+// FIFO
 export function simulateFIFO(refs: number[], frameCount: number): Step[] {
-    const steps: Step[] = [];
-    const frames: number[] = [];
-    const queue: number[] = [];
-    
-    for (let page of refs) {
-        let fault = false;
-        let explanation = "";
-        
-        if (!frames.includes(page)) {
-            fault = true;
-            if (frames.length < frameCount) {
-                frames.push(page);
-                queue.push(page);
-                explanation = `Page ${page} not in memory → loaded into empty frame.`;
-            } else {
-                const victim = queue.shift()!;
-                const idx = frames.indexOf(victim);
-                frames[idx] = page;
-                queue.push(page);
-                explanation = `Page ${page} not in memory → replaced oldest page ${victim} (FIFO).`;
-            }
-        } else {
-            explanation = `Page ${page} is already in memory → no page fault.`;
+  const frames: number[] = [];
+  const steps: Step[] = [];
+  const queue: number[] = [];
+
+  refs.forEach(page => {
+    let fault = false;
+    let replaced: number | undefined;
+
+    if (!frames.includes(page)) {
+      fault = true;
+      if (frames.length < frameCount) {
+        frames.push(page);
+      } else {
+        replaced = queue.shift();
+        if (replaced !== undefined) {
+          const idx = frames.indexOf(replaced);
+          frames[idx] = page;
         }
-        
-        steps.push({ frames: [...frames], page, fault, explanation });
+      }
+      queue.push(page);
     }
-    return steps;
+
+    steps.push({
+      frames: [...frames],
+      page,
+      fault,
+      explanation: fault
+        ? replaced !== undefined
+          ? `Page ${page} caused a fault. Replaced ${replaced} (FIFO).`
+          : `Page ${page} caused a fault and was loaded.`
+        : `Page ${page} was a hit.`,
+      replacedPage: replaced,
+    });
+  });
+
+  return steps;
 }
 
+// LRU
 export function simulateLRU(refs: number[], frameCount: number): Step[] {
-    const steps: Step[] = [];
-    const frames: number[] = [];
-    const recentlyUsed: number[] = [];
-    
-    for (let page of refs) {
-        let fault = false;
-        let explanation = "";
-        
-        // Update recently used list
-        const pageIndex = recentlyUsed.indexOf(page);
-        if (pageIndex > -1) {
-            recentlyUsed.splice(pageIndex, 1);
-        }
-        recentlyUsed.push(page);
-        
-        if (!frames.includes(page)) {
-            fault = true;
-            if (frames.length < frameCount) {
-                frames.push(page);
-                explanation = `Page ${page} not in memory → loaded into empty frame.`;
-            } else {
-                // Find least recently used page (first in the recentlyUsed list that's in frames)
-                let victim = -1;
-                for (let i = 0; i < recentlyUsed.length; i++) {
-                    if (frames.includes(recentlyUsed[i])) {
-                        victim = recentlyUsed[i];
-                        recentlyUsed.splice(i, 1);
-                        break;
-                    }
-                }
-                
-                const idx = frames.indexOf(victim);
-                frames[idx] = page;
-                explanation = `Page ${page} not in memory → replaced least recently used page ${victim} (LRU).`;
-            }
-        } else {
-            explanation = `Page ${page} is already in memory → no page fault.`;
-        }
-        
-        steps.push({ frames: [...frames], page, fault, explanation });
+  const frames: number[] = [];
+  const steps: Step[] = [];
+  const recent: Map<number, number> = new Map();
+
+  refs.forEach((page, i) => {
+    let fault = false;
+    let replaced: number | undefined;
+
+    if (!frames.includes(page)) {
+      fault = true;
+      if (frames.length < frameCount) {
+        frames.push(page);
+      } else {
+        // least recently used
+        let lruPage = [...recent.entries()].sort((a, b) => a[1] - b[1])[0][0];
+        replaced = lruPage;
+        const idx = frames.indexOf(lruPage);
+        frames[idx] = page;
+      }
     }
-    return steps;
+
+    recent.set(page, i);
+
+    steps.push({
+      frames: [...frames],
+      page,
+      fault,
+      explanation: fault
+        ? replaced !== undefined
+          ? `Page ${page} caused a fault. Replaced ${replaced} (LRU).`
+          : `Page ${page} caused a fault and was loaded.`
+        : `Page ${page} was a hit.`,
+      replacedPage: replaced,
+    });
+  });
+
+  return steps;
 }
 
+// OPT (Optimal)
 export function simulateOPT(refs: number[], frameCount: number): Step[] {
-    const steps: Step[] = [];
-    const frames: number[] = [];
-    
-    for (let i = 0; i < refs.length; i++) {
-        const page = refs[i];
-        let fault = false;
-        let explanation = "";
-        
-        if (!frames.includes(page)) {
-            fault = true;
-            if (frames.length < frameCount) {
-                frames.push(page);
-                explanation = `Page ${page} not in memory → loaded into empty frame.`;
-            } else {
-                // Find which page will not be used for the longest time
-                let farthest = -1;
-                let victim = -1;
-                
-                for (let j = 0; j < frames.length; j++) {
-                    const framePage = frames[j];
-                    let nextUse = Infinity;
-                    
-                    // Find next use of this page
-                    for (let k = i + 1; k < refs.length; k++) {
-                        if (refs[k] === framePage) {
-                            nextUse = k;
-                            break;
-                        }
-                    }
-                    
-                    if (nextUse === Infinity) {
-                        victim = framePage;
-                        break;
-                    }
-                    
-                    if (nextUse > farthest) {
-                        farthest = nextUse;
-                        victim = framePage;
-                    }
-                }
-                
-                const idx = frames.indexOf(victim);
-                frames[idx] = page;
-                explanation = `Page ${page} not in memory → replaced page ${victim} that won't be used for the longest time (OPT).`;
-            }
-        } else {
-            explanation = `Page ${page} is already in memory → no page fault.`;
+  const frames: number[] = [];
+  const steps: Step[] = [];
+
+  refs.forEach((page, i) => {
+    let fault = false;
+    let replaced: number | undefined;
+
+    if (!frames.includes(page)) {
+      fault = true;
+      if (frames.length < frameCount) {
+        frames.push(page);
+      } else {
+        // find the page used farthest in the future
+        let farthestIndex = -1;
+        let victim: number | undefined;
+        for (const f of frames) {
+          const nextUse = refs.slice(i + 1).indexOf(f);
+          if (nextUse === -1) {
+            victim = f;
+            break;
+          }
+          if (nextUse > farthestIndex) {
+            farthestIndex = nextUse;
+            victim = f;
+          }
         }
-        
-        steps.push({ frames: [...frames], page, fault, explanation });
+        if (victim !== undefined) {
+          replaced = victim;
+          const idx = frames.indexOf(victim);
+          frames[idx] = page;
+        }
+      }
     }
-    return steps;
+
+    steps.push({
+      frames: [...frames],
+      page,
+      fault,
+      explanation: fault
+        ? replaced !== undefined
+          ? `Page ${page} caused a fault. Replaced ${replaced} (OPT).`
+          : `Page ${page} caused a fault and was loaded.`
+        : `Page ${page} was a hit.`,
+      replacedPage: replaced,
+    });
+  });
+
+  return steps;
 }
