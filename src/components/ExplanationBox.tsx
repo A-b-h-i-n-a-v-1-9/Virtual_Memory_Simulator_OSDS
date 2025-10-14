@@ -1,4 +1,3 @@
-// components/ExplanationBox.tsx (Updated with arrows and more detailed, algorithm-specific explanations)
 import { motion } from "framer-motion";
 
 interface ExplanationBoxProps {
