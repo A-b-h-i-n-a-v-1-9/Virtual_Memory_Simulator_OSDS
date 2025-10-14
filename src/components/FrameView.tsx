@@ -1,4 +1,3 @@
-// components/FrameView.tsx (Updated with animations and replacement arrows)
 import { motion } from "framer-motion";
 
 interface FrameViewProps {
@@ -47,7 +46,6 @@ export default function FrameView({ frames, current, fault, replacedPage }: Fram
         ))}
       </div>
       
-      {/* Frame labels */}
       <div className="flex gap-6 justify-center">
         {frames.map((_, i) => (
           <div key={i} className="w-20 text-center text-sm font-medium text-indigo-700">
