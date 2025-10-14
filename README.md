@@ -138,7 +138,7 @@ The frontend iterates through these steps and visually updates the table/grid â€
 ## ðŸš€ Run Locally
 
 ```bash
-git clone [https://github.com/your-username/page-replacement-visualizer.git](https://github.com/A-b-h-i-n-a-v-1-9/Virtual_Memory_Simulator_OSDS)
+git clone https://github.com/your-username/page-replacement-visualizer.git
 cd page-replacement-visualizer
 npm install
 npm run dev
