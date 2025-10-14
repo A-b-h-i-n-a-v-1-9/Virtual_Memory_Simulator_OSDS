@@ -41,8 +41,6 @@ The app dynamically simulates each step of page replacement, visually showing:
   - If not and space is available → load it
   - If not and memory is full → remove the page at the front (oldest), and load the new page.
 
-**Example Snapshot:**  
-![**FIFO** Simulation](./screenshots/fifo.png)
 
 **In code:** The algorithm keeps a queue and frames array:
 
@@ -69,8 +67,6 @@ if (!frames.includes(page)) {
   - If present → Hit, update its timestamp
   - If not → Fault, and if memory is full, remove the least recently used page
 
-**Example Snapshot:**  
-![LRU Simulation](./screenshots/lru.png)
 
 **In code:** Uses a Map<number, number> to record each page’s last access index:
 
@@ -97,8 +93,6 @@ recent.set(page, i);
   - Find the one that will be used farthest in the future (or never again).
   - Replace it.
 
-**Example Snapshot:**  
-![OPT Simulation](./screenshots/opt.png)
 
 **In code:**
 
