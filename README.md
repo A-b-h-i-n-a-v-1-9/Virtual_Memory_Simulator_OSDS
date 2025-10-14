@@ -114,10 +114,10 @@ frames[frames.indexOf(victim!)] = page;
 ## 📸 Pictorial Representation
 
 ### 🧾 Input Screen
-![Input](./screenshots/input.png)
+![Input](./public/input.jpg)
 
 ### 📊 Simulation Screen
-![FIFO](./screenshots/fifo.png)
+![FIFO](./public/simulation.jpg)
 
 
 ## 🧠 How It Works Internally
@@ -138,7 +138,7 @@ The frontend iterates through these steps and visually updates the table/grid �
 ## 🚀 Run Locally
 
 ```bash
-git clone https://github.com/your-username/page-replacement-visualizer.git
+git clone https://github.com/A-b-h-i-n-a-v-1-9/Virtual_Memory_Simulator_OSDS
 cd page-replacement-visualizer
 npm install
 npm run dev
