@@ -1,4 +1,3 @@
-// components/Stats.tsx (Updated with progress bars for visual appeal)
 interface StatsProps {
   hits: number;
   faults: number;
