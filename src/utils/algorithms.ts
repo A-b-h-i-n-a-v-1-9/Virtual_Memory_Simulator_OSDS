@@ -3,7 +3,7 @@ export interface Step {
   page: number;
   fault: boolean;
   explanation: string;
-  replacedPage?: number; // 👈 add this line
+  replacedPage?: number;
 }
 
 
