@@ -117,7 +117,7 @@ frames[frames.indexOf(victim!)] = page;
 ![Input](./public/input.jpg)
 
 ### 📊 Simulation Screen
-![FIFO](./public/simulation.jpg)
+![FIFO](./public/simulation.png)
 
 
 ## 🧠 How It Works Internally
